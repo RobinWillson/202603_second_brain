@@ -62,6 +62,12 @@ export async function GET() {
   }
 
   try {
+    try {
+      await fs.access(NOTES_PATH);
+    } catch {
+      await fs.mkdir(NOTES_PATH, { recursive: true });
+    }
+
     const tree = await buildTree(NOTES_PATH);
     return NextResponse.json(tree);
   } catch (error) {
