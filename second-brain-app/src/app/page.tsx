@@ -8,20 +8,20 @@ import { Folder, FileText, Search, PlusCircle, Trash2, Book, MoreVertical, X } f
 
 function MoveDialogFolderTree({ nodes, selectedPath, onSelect, level = 0 }: { nodes: any[], selectedPath: string, onSelect: (path: string) => void, level?: number }) {
   return (
-    <ul className={level > 0 ? "pl-3 mt-1 border-l border-gray-700 ml-2 space-y-1" : "space-y-1"}>
-      {nodes.filter(n => n.type === 'folder').map(node => (
-        <li key={node.path}>
-          <div 
-            onClick={() => onSelect(node.path)}
-            className={`flex items-center py-1.5 px-2 rounded cursor-pointer text-sm transition-colors ${selectedPath === node.path ? 'bg-blue-600/30 text-blue-400 font-medium' : 'text-gray-300 hover:bg-gray-700'}`}
+    <ul className={ level > 0 ? "pl-3 mt-1 border-l border-gray-700 ml-2 space-y-1" : "space-y-1" }>
+      { nodes.filter(n => n.type === 'folder').map(node => (
+        <li key={ node.path }>
+          <div
+            onClick={ () => onSelect(node.path) }
+            className={ `flex items-center py-1.5 px-2 rounded cursor-pointer text-sm transition-colors ${selectedPath === node.path ? 'bg-blue-600/30 text-blue-400 font-medium' : 'text-gray-300 hover:bg-gray-700'}` }
           >
-            <Folder className="w-4 h-4 mr-2" /> {node.name}
+            <Folder className="w-4 h-4 mr-2" /> { node.name }
           </div>
-          {node.children && (
-            <MoveDialogFolderTree nodes={node.children} selectedPath={selectedPath} onSelect={onSelect} level={level + 1} />
-          )}
+          { node.children && (
+            <MoveDialogFolderTree nodes={ node.children } selectedPath={ selectedPath } onSelect={ onSelect } level={ level + 1 } />
+          ) }
         </li>
-      ))}
+      )) }
     </ul>
   );
 }
@@ -37,9 +37,10 @@ interface SidebarProps {
   onRenameFile: (path: string, currentName: string) => void;
   onMoveFile: (path: string) => void;
   onDeleteFile: (path: string) => void;
+  onInitFolders: () => void;
 }
 
-function Sidebar({ tree, onSelectFile, onCreateFile, onCreateFolder, onRenameFolder, onMoveFolder, onDeleteFolder, onRenameFile, onMoveFile, onDeleteFile }: SidebarProps) {
+function Sidebar({ tree, onSelectFile, onCreateFile, onCreateFolder, onRenameFolder, onMoveFolder, onDeleteFolder, onRenameFile, onMoveFile, onDeleteFile, onInitFolders }: SidebarProps) {
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
@@ -61,28 +62,28 @@ function Sidebar({ tree, onSelectFile, onCreateFile, onCreateFolder, onRenameFol
 
   const renderTree = (nodes: any[], level = 0) => {
     return (
-      <ul className={level > 0 ? "pl-3 mt-1 space-y-1 border-l border-gray-800/50 ml-2" : "mt-1 space-y-1"}>
-        {nodes.map(node => {
+      <ul className={ level > 0 ? "pl-3 mt-1 space-y-1 border-l border-gray-800/50 ml-2" : "mt-1 space-y-1" }>
+        { nodes.map(node => {
           const isExpanded = expandedFolders.has(node.path);
           return (
-            <li key={node.path} className="text-sm">
-              {node.type === 'folder' ? (
+            <li key={ node.path } className="text-sm">
+              { node.type === 'folder' ? (
                 <div className="flex flex-col">
-                  <div 
-                    onClick={(e) => toggleFolder(node.path, e)}
+                  <div
+                    onClick={ (e) => toggleFolder(node.path, e) }
                     className="group relative flex items-center justify-between text-gray-400 font-medium py-1.5 px-2 rounded-md hover:bg-gray-800 hover:text-gray-200 cursor-pointer transition-colors select-none"
                   >
                     <div className="flex items-center">
-                      <Folder className={`w-4 h-4 mr-2 transition-colors ${isExpanded ? 'text-blue-400' : 'text-gray-500'}`} /> 
-                      {node.name}
+                      <Folder className={ `w-4 h-4 mr-2 transition-colors ${isExpanded ? 'text-blue-400' : 'text-gray-500'}` } />
+                      { node.name }
                     </div>
-                    
+
                     <div className="hidden group-hover:flex items-center">
-                      <button 
-                        onClick={(e) => { 
-                          e.stopPropagation(); 
-                          setActiveDropdown(activeDropdown === node.path ? null : node.path); 
-                        }} 
+                      <button
+                        onClick={ (e) => {
+                          e.stopPropagation();
+                          setActiveDropdown(activeDropdown === node.path ? null : node.path);
+                        } }
                         className="p-1 hover:bg-gray-600 rounded text-gray-400 hover:text-white transition-colors"
                         title="更多選項"
                       >
@@ -90,33 +91,33 @@ function Sidebar({ tree, onSelectFile, onCreateFile, onCreateFolder, onRenameFol
                       </button>
                     </div>
 
-                    {activeDropdown === node.path && (
+                    { activeDropdown === node.path && (
                       <div className="absolute right-0 top-full mt-1 w-32 bg-gray-800 border border-gray-700 rounded-md shadow-lg py-1 z-20 text-xs text-gray-300 font-normal">
-                        <div onClick={(e) => { e.stopPropagation(); setActiveDropdown(null); onCreateFile(node.path); }} className="px-3 py-1.5 hover:bg-gray-700 cursor-pointer text-left">新增檔案</div>
-                        <div onClick={(e) => { e.stopPropagation(); setActiveDropdown(null); onCreateFolder(node.path); }} className="px-3 py-1.5 hover:bg-gray-700 cursor-pointer text-left">新增資料夾</div>
-                        <div onClick={(e) => { e.stopPropagation(); setActiveDropdown(null); onRenameFolder(node.path, node.name); }} className="px-3 py-1.5 hover:bg-gray-700 cursor-pointer text-left">重新命名</div>
-                        <div onClick={(e) => { e.stopPropagation(); setActiveDropdown(null); onMoveFolder(node.path); }} className="px-3 py-1.5 hover:bg-gray-700 cursor-pointer text-left">移動到</div>
-                        <div onClick={(e) => { e.stopPropagation(); setActiveDropdown(null); onDeleteFolder(node.path); }} className="px-3 py-1.5 hover:bg-gray-700 cursor-pointer text-left text-red-400">刪除資料夾</div>
+                        <div onClick={ (e) => { e.stopPropagation(); setActiveDropdown(null); onCreateFile(node.path); } } className="px-3 py-1.5 hover:bg-gray-700 cursor-pointer text-left">新增檔案</div>
+                        <div onClick={ (e) => { e.stopPropagation(); setActiveDropdown(null); onCreateFolder(node.path); } } className="px-3 py-1.5 hover:bg-gray-700 cursor-pointer text-left">新增資料夾</div>
+                        <div onClick={ (e) => { e.stopPropagation(); setActiveDropdown(null); onRenameFolder(node.path, node.name); } } className="px-3 py-1.5 hover:bg-gray-700 cursor-pointer text-left">重新命名</div>
+                        <div onClick={ (e) => { e.stopPropagation(); setActiveDropdown(null); onMoveFolder(node.path); } } className="px-3 py-1.5 hover:bg-gray-700 cursor-pointer text-left">移動到</div>
+                        <div onClick={ (e) => { e.stopPropagation(); setActiveDropdown(null); onDeleteFolder(node.path); } } className="px-3 py-1.5 hover:bg-gray-700 cursor-pointer text-left text-red-400">刪除資料夾</div>
                       </div>
-                    )}
+                    ) }
                   </div>
-                  {isExpanded && node.children && renderTree(node.children, level + 1)}
+                  { isExpanded && node.children && renderTree(node.children, level + 1) }
                 </div>
               ) : (
-                <div 
+                <div
                   className="group relative flex items-center justify-between text-gray-300 hover:bg-gray-800 py-1.5 px-2 rounded-md cursor-pointer transition-colors select-none"
-                  onClick={() => onSelectFile(node.path)}
+                  onClick={ () => onSelectFile(node.path) }
                 >
                   <div className="flex items-center">
-                    <FileText className="w-3.5 h-3.5 mr-2 text-gray-500" /> {node.name}
+                    <FileText className="w-3.5 h-3.5 mr-2 text-gray-500" /> { node.name }
                   </div>
 
                   <div className="hidden group-hover:flex items-center">
-                    <button 
-                      onClick={(e) => { 
-                        e.stopPropagation(); 
-                        setActiveDropdown(activeDropdown === node.path ? null : node.path); 
-                      }} 
+                    <button
+                      onClick={ (e) => {
+                        e.stopPropagation();
+                        setActiveDropdown(activeDropdown === node.path ? null : node.path);
+                      } }
                       className="p-1 hover:bg-gray-600 rounded text-gray-400 hover:text-white transition-colors"
                       title="更多選項"
                     >
@@ -124,18 +125,18 @@ function Sidebar({ tree, onSelectFile, onCreateFile, onCreateFolder, onRenameFol
                     </button>
                   </div>
 
-                  {activeDropdown === node.path && (
+                  { activeDropdown === node.path && (
                     <div className="absolute right-0 top-full mt-1 w-32 bg-gray-800 border border-gray-700 rounded-md shadow-lg py-1 z-20 text-xs text-gray-300 font-normal">
-                      <div onClick={(e) => { e.stopPropagation(); setActiveDropdown(null); onRenameFile(node.path, node.name); }} className="px-3 py-1.5 hover:bg-gray-700 cursor-pointer text-left">重新命名</div>
-                      <div onClick={(e) => { e.stopPropagation(); setActiveDropdown(null); onMoveFile(node.path); }} className="px-3 py-1.5 hover:bg-gray-700 cursor-pointer text-left">移動到</div>
-                      <div onClick={(e) => { e.stopPropagation(); setActiveDropdown(null); onDeleteFile(node.path); }} className="px-3 py-1.5 hover:bg-gray-700 cursor-pointer text-left text-red-400">刪除檔案</div>
+                      <div onClick={ (e) => { e.stopPropagation(); setActiveDropdown(null); onRenameFile(node.path, node.name); } } className="px-3 py-1.5 hover:bg-gray-700 cursor-pointer text-left">重新命名</div>
+                      <div onClick={ (e) => { e.stopPropagation(); setActiveDropdown(null); onMoveFile(node.path); } } className="px-3 py-1.5 hover:bg-gray-700 cursor-pointer text-left">移動到</div>
+                      <div onClick={ (e) => { e.stopPropagation(); setActiveDropdown(null); onDeleteFile(node.path); } } className="px-3 py-1.5 hover:bg-gray-700 cursor-pointer text-left text-red-400">刪除檔案</div>
                     </div>
-                  )}
+                  ) }
                 </div>
-              )}
+              ) }
             </li>
           );
-        })}
+        }) }
       </ul>
     );
   };
@@ -143,32 +144,41 @@ function Sidebar({ tree, onSelectFile, onCreateFile, onCreateFolder, onRenameFol
   return (
     <div className="w-72 bg-[#0a0a0a] border-r border-gray-800 h-screen overflow-y-auto p-4 flex flex-col">
       <div className="text-xl font-bold tracking-tight flex items-center justify-between mb-6 text-white px-2 group">
-         <div className="flex items-center gap-2">
-           🧠 Second Brain
-         </div>
-         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-           <button 
-             onClick={() => onCreateFile('')} 
-             className="p-1 hover:bg-gray-800 rounded text-gray-400 hover:text-white transition-colors" 
-             title="新增根目錄檔案"
-           >
-             <FileText className="w-4 h-4" />
-           </button>
-           <button 
-             onClick={() => onCreateFolder('')} 
-             className="p-1 hover:bg-gray-800 rounded text-gray-400 hover:text-white transition-colors" 
-             title="新增根目錄資料夾"
-           >
-             <Folder className="w-4 h-4" />
-           </button>
-         </div>
+        <div className="flex items-center gap-2">
+          🧠 Second Brain
+        </div>
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          {tree.length === 0 && (
+            <button 
+              onClick={onInitFolders}
+              className="px-2 py-0.5 hover:bg-blue-500 rounded bg-blue-600/20 text-blue-400 hover:text-white transition-colors text-xs font-bold leading-tight border border-blue-500/30" 
+              title="一鍵初始化 00~04 目錄"
+            >
+              Init
+            </button>
+          )}
+          <button 
+            onClick={() => onCreateFile('')} 
+            className="p-1 hover:bg-gray-800 rounded text-gray-400 hover:text-white transition-colors" 
+            title="新增根目錄檔案"
+          >
+            <FileText className="w-4 h-4" />
+          </button>
+          <button 
+            onClick={() => onCreateFolder('')} 
+            className="p-1 hover:bg-gray-800 rounded text-gray-400 hover:text-white transition-colors" 
+            title="新增根目錄資料夾"
+          >
+            <Folder className="w-4 h-4" />
+          </button>
+        </div>
       </div>
       <nav className="flex-1">
-        {renderTree(tree)}
+        { renderTree(tree) }
       </nav>
       <div className="mt-4 pt-4 border-t border-gray-800">
-        <div 
-          onClick={() => onSelectFile('使用原則')}
+        <div
+          onClick={ () => onSelectFile('使用原則') }
           className="flex items-center text-gray-300 hover:text-white hover:bg-gray-800 py-2 px-2 rounded-md cursor-pointer transition-colors select-none"
         >
           <Book className="w-4 h-4 mr-2 text-indigo-400" /> 使用原則 (PARA 機制)
@@ -187,11 +197,11 @@ export default function Home() {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
-  const [moveDialogState, setMoveDialogState] = useState<{isOpen: boolean, sourcePath: string, targetPath: string}>({ isOpen: false, sourcePath: '', targetPath: '' });
+  const [moveDialogState, setMoveDialogState] = useState<{ isOpen: boolean, sourcePath: string, targetPath: string }>({ isOpen: false, sourcePath: '', targetPath: '' });
 
   const loadTree = async () => {
     const res = await fetch('/api/tree');
-    if(res.ok) setTree(await res.json());
+    if (res.ok) setTree(await res.json());
   };
 
   useEffect(() => {
@@ -311,14 +321,14 @@ PARA 系統完美解決了這個問題。它將當下最需要行動的「專案
   const loadFile = async (path: string) => {
     setCurrentFilePath(path);
     setIsEditing(false);
-    
+
     if (path === '使用原則') {
-       setFileContent(paraDocs);
-       return;
+      setFileContent(paraDocs);
+      return;
     }
-    
+
     const res = await fetch('/api/file?path=' + encodeURIComponent(path));
-    if(res.ok) {
+    if (res.ok) {
       const data = await res.json();
       setFileContent(data.content);
     }
@@ -337,19 +347,31 @@ PARA 系統完美解決了這個問題。它將當下最需要行動的「專案
     // But since state is down in Sidebar, user might need to click again unless we lift state. We'll leave it simple for now.
   };
 
+  const handleInitFolders = async () => {
+    const defaultFolders = ['00-inbox', '01-projects', '02-areas', '03-resources', '04-archive'];
+    for (const folder of defaultFolders) {
+      await fetch('/api/folder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ parentPath: '', name: folder })
+      });
+    }
+    loadTree();
+  };
+
   const handleCreateFile = async (parentPath: string) => {
     const name = prompt('請輸入新檔案名稱 (不需輸入 .md)：');
     if (!name) return;
     const fileName = name.endsWith('.md') ? name : name + '.md';
     const filePath = parentPath + '/' + fileName;
-    
+
     // Create an empty file with title heading
     await fetch('/api/file?path=' + encodeURIComponent(filePath), {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content: '# ' + name })
     });
-    
+
     loadTree();
     loadFile(filePath);
   };
@@ -390,7 +412,7 @@ PARA 系統完美解決了這個問題。它將當下最需要行動的「專案
     let newName = prompt('請輸入新的檔案名稱：', currentName);
     if (!newName || newName === currentName) return;
     if (!newName.toLowerCase().endsWith('.md')) newName += '.md';
-    
+
     await fetch('/api/folder-actions', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -424,112 +446,113 @@ PARA 系統完美解決了這個問題。它將當下最需要行動的「專案
   };
 
   const handleDelete = async () => {
-     if (!currentFilePath) return;
-     if (!confirm('Move this file to trash?')) return;
-     await fetch('/api/file?path=' + encodeURIComponent(currentFilePath), { method: 'DELETE' });
-     setCurrentFilePath(null);
-     setFileContent('');
-     loadTree();
+    if (!currentFilePath) return;
+    if (!confirm('Move this file to trash?')) return;
+    await fetch('/api/file?path=' + encodeURIComponent(currentFilePath), { method: 'DELETE' });
+    setCurrentFilePath(null);
+    setFileContent('');
+    loadTree();
   };
 
   return (
     <div className="flex bg-[#111111] text-gray-200 h-screen font-sans">
-      <Sidebar 
-        tree={tree} 
-        onSelectFile={loadFile} 
-        onCreateFile={handleCreateFile} 
-        onCreateFolder={handleCreateFolder} 
-        onRenameFolder={handleRenameFolder}
-        onMoveFolder={handleMoveFolder}
-        onDeleteFolder={handleDeleteFolder}
-        onRenameFile={handleRenameFile}
-        onMoveFile={handleMoveFile}
-        onDeleteFile={handleDeleteFile}
+      <Sidebar
+        tree={ tree }
+        onSelectFile={ loadFile }
+        onCreateFile={ handleCreateFile }
+        onCreateFolder={ handleCreateFolder }
+        onRenameFolder={ handleRenameFolder }
+        onMoveFolder={ handleMoveFolder }
+        onDeleteFolder={ handleDeleteFolder }
+        onRenameFile={ handleRenameFile }
+        onMoveFile={ handleMoveFile }
+        onDeleteFile={ handleDeleteFile }
+        onInitFolders={ handleInitFolders }
       />
-      
+
       <main className="flex-1 flex flex-col h-screen overflow-hidden">
-        {/* Top Navbar / Full-text Search */}
+        {/* Top Navbar / Full-text Search */ }
         <header className="h-16 border-b border-gray-800 flex items-center px-6 gap-4 bg-[#0a0a0a] relative z-40">
           <div className="flex-1 max-w-2xl relative">
             <div className="flex items-center bg-gray-900 rounded-lg px-3 py-2 border border-gray-800 focus-within:border-blue-500/50 focus-within:ring-1 ring-blue-500/50 transition-all">
               <Search className="text-gray-500 w-4 h-4 mr-2" />
-              <input 
+              <input
                 type="text"
                 placeholder="搜尋筆記標題與內容... (Search notes)"
                 className="bg-transparent border-none outline-none w-full text-white text-sm focus:ring-0"
-                value={searchText}
-                onChange={e => setSearchText(e.target.value)}
-                onFocus={() => searchText.trim() && setShowSearchDropdown(true)}
-                onBlur={() => setTimeout(() => setShowSearchDropdown(false), 200)}
+                value={ searchText }
+                onChange={ e => setSearchText(e.target.value) }
+                onFocus={ () => searchText.trim() && setShowSearchDropdown(true) }
+                onBlur={ () => setTimeout(() => setShowSearchDropdown(false), 200) }
               />
             </div>
-            
-            {showSearchDropdown && (
+
+            { showSearchDropdown && (
               <div className="absolute top-full left-0 right-0 mt-2 bg-gray-900 border border-gray-700 rounded-lg shadow-2xl max-h-96 overflow-y-auto z-50">
-                {isSearching ? (
+                { isSearching ? (
                   <div className="p-4 text-center text-gray-500 text-sm">搜尋中...</div>
                 ) : searchResults.length > 0 ? (
                   <div className="py-2">
-                    {searchResults.map((result, idx) => (
-                      <div 
-                        key={idx} 
-                        onClick={() => {
+                    { searchResults.map((result, idx) => (
+                      <div
+                        key={ idx }
+                        onClick={ () => {
                           loadFile(result.path);
                           setShowSearchDropdown(false);
-                        }}
+                        } }
                         className="px-4 py-2 hover:bg-gray-800 cursor-pointer border-b border-gray-800/50 last:border-0"
                       >
-                        <div className="text-sm font-medium text-blue-400 mb-1">{result.name}</div>
-                        <div className="text-xs text-gray-400 truncate">{result.preview}</div>
-                        <div className="text-[10px] text-gray-600 mt-1">{result.path}</div>
+                        <div className="text-sm font-medium text-blue-400 mb-1">{ result.name }</div>
+                        <div className="text-xs text-gray-400 truncate">{ result.preview }</div>
+                        <div className="text-[10px] text-gray-600 mt-1">{ result.path }</div>
                       </div>
-                    ))}
+                    )) }
                   </div>
                 ) : (
                   <div className="p-4 text-center text-gray-500 text-sm">找不到相關筆記</div>
-                )}
+                ) }
               </div>
-            )}
+            ) }
           </div>
         </header>
 
-        {/* Editor / Viewer */}
+        {/* Editor / Viewer */ }
         <div className="flex-1 overflow-y-auto p-10 relative">
-          {currentFilePath ? (
+          { currentFilePath ? (
             <div className="max-w-4xl mx-auto pb-32">
               <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-800/80">
                 <span className="text-gray-500 font-mono text-xs tracking-wide bg-gray-900 px-2 py-1 rounded">
-                  {currentFilePath}
+                  { currentFilePath }
                 </span>
                 <div className="flex items-center gap-2">
-                  <button 
-                    onClick={() => isEditing ? handleSave() : setIsEditing(true)}
+                  <button
+                    onClick={ () => isEditing ? handleSave() : setIsEditing(true) }
                     className="px-4 py-1.5 rounded bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 font-medium text-sm transition-colors border border-blue-500/20"
                   >
-                    {isEditing ? 'Save Markdown' : 'Edit Note'}
+                    { isEditing ? 'Save Markdown' : 'Edit Note' }
                   </button>
-                  <button onClick={handleDelete} className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-400/10 rounded border border-transparent hover:border-red-400/20 transition-all" title="Move to trash">
-                    <Trash2 className="w-4 h-4"/>
+                  <button onClick={ handleDelete } className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-400/10 rounded border border-transparent hover:border-red-400/20 transition-all" title="Move to trash">
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
 
-              {isEditing ? (
-                 <textarea
-                   className="w-full min-h-[70vh] bg-transparent text-gray-300 outline-none font-mono text-sm leading-relaxed resize-y"
-                   value={fileContent}
-                   onChange={e => setFileContent(e.target.value)}
-                 />
+              { isEditing ? (
+                <textarea
+                  className="w-full min-h-[70vh] bg-transparent text-gray-300 outline-none font-mono text-sm leading-relaxed resize-y"
+                  value={ fileContent }
+                  onChange={ e => setFileContent(e.target.value) }
+                />
               ) : (
-                 <div className="text-gray-300 leading-relaxed max-w-none text-[15px] [&>h1]:text-2xl [&>h1]:font-bold [&>h1]:text-white [&>h1]:mb-6 [&>h1]:mt-8 [&>h2]:text-xl [&>h2]:font-semibold [&>h2]:text-white [&>h2]:mb-4 [&>h2]:mt-6 [&>h3]:text-lg [&>h3]:font-medium [&>h3]:text-white [&>h3]:mb-3 [&>h3]:mt-5 [&>p]:mb-4 [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:mb-4 [&>ol]:list-decimal [&>ol]:pl-6 [&>ol]:mb-4 [&>pre]:bg-[#0d0d0d] [&>pre]:p-4 [&>pre]:rounded-lg [&>pre]:mb-4 [&>pre]:border [&>pre]:border-gray-800 [&>code]:bg-gray-800 [&>code]:px-1 [&>code]:py-0.5 [&>code]:rounded [&>code]:text-blue-300 [&>blockquote]:border-l-4 [&>blockquote]:border-gray-700 [&>blockquote]:pl-4 [&>blockquote]:italic [&>blockquote]:text-gray-400">
-                   <ReactMarkdown 
-                     remarkPlugins={[remarkGfm]} 
-                     rehypePlugins={[rehypeHighlight]}
-                   >
-                     {fileContent}
-                   </ReactMarkdown>
-                 </div>
-              )}
+                <div className="text-gray-300 leading-relaxed max-w-none text-[15px] [&>h1]:text-2xl [&>h1]:font-bold [&>h1]:text-white [&>h1]:mb-6 [&>h1]:mt-8 [&>h2]:text-xl [&>h2]:font-semibold [&>h2]:text-white [&>h2]:mb-4 [&>h2]:mt-6 [&>h3]:text-lg [&>h3]:font-medium [&>h3]:text-white [&>h3]:mb-3 [&>h3]:mt-5 [&>p]:mb-4 [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:mb-4 [&>ol]:list-decimal [&>ol]:pl-6 [&>ol]:mb-4 [&>pre]:bg-[#0d0d0d] [&>pre]:p-4 [&>pre]:rounded-lg [&>pre]:mb-4 [&>pre]:border [&>pre]:border-gray-800 [&>code]:bg-gray-800 [&>code]:px-1 [&>code]:py-0.5 [&>code]:rounded [&>code]:text-blue-300 [&>blockquote]:border-l-4 [&>blockquote]:border-gray-700 [&>blockquote]:pl-4 [&>blockquote]:italic [&>blockquote]:text-gray-400">
+                  <ReactMarkdown
+                    remarkPlugins={ [remarkGfm] }
+                    rehypePlugins={ [rehypeHighlight] }
+                  >
+                    { fileContent }
+                  </ReactMarkdown>
+                </div>
+              ) }
             </div>
           ) : (
             <div className="h-full flex flex-col items-center justify-center text-gray-600 gap-4 mt-[-10vh]">
@@ -538,48 +561,48 @@ PARA 系統完美解決了這個問題。它將當下最需要行動的「專案
               </div>
               <p className="text-sm">Select a file from the sidebar to view its contents, or use Quick Capture above.</p>
             </div>
-          )}
+          ) }
         </div>
       </main>
 
-      {/* Move Folder Modal */}
-      {moveDialogState.isOpen && (
+      {/* Move Folder Modal */ }
+      { moveDialogState.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div className="bg-gray-900 border border-gray-700 rounded-lg w-full max-w-md shadow-2xl flex flex-col max-h-[80vh]">
             <div className="flex items-center justify-between p-4 border-b border-gray-800">
               <h3 className="text-lg font-medium text-white">移動資料夾</h3>
-              <button onClick={() => setMoveDialogState({ ...moveDialogState, isOpen: false })} className="text-gray-400 hover:text-white">
-                <X className="w-5 h-5"/>
+              <button onClick={ () => setMoveDialogState({ ...moveDialogState, isOpen: false }) } className="text-gray-400 hover:text-white">
+                <X className="w-5 h-5" />
               </button>
             </div>
-            
+
             <div className="p-4 overflow-y-auto flex-1">
-              <div className="mb-2 text-sm text-gray-400">目前選擇：<span className="text-gray-200">{moveDialogState.sourcePath}</span></div>
+              <div className="mb-2 text-sm text-gray-400">目前選擇：<span className="text-gray-200">{ moveDialogState.sourcePath }</span></div>
               <div className="mb-4 text-sm text-gray-400">選擇目標（預設為根目錄）：</div>
               <div className="bg-gray-950 border border-gray-800 p-2 rounded-md h-64 overflow-y-auto">
-                <div 
-                  onClick={() => setMoveDialogState({ ...moveDialogState, targetPath: '' })}
-                  className={`flex items-center py-1.5 px-2 rounded cursor-pointer text-sm transition-colors mb-1 ${moveDialogState.targetPath === '' ? 'bg-blue-600/30 text-blue-400 font-medium' : 'text-gray-300 hover:bg-gray-700'}`}
+                <div
+                  onClick={ () => setMoveDialogState({ ...moveDialogState, targetPath: '' }) }
+                  className={ `flex items-center py-1.5 px-2 rounded cursor-pointer text-sm transition-colors mb-1 ${moveDialogState.targetPath === '' ? 'bg-blue-600/30 text-blue-400 font-medium' : 'text-gray-300 hover:bg-gray-700'}` }
                 >
                   <Folder className="w-4 h-4 mr-2" /> (根目錄 Root)
                 </div>
-                <MoveDialogFolderTree 
-                  nodes={tree} 
-                  selectedPath={moveDialogState.targetPath} 
-                  onSelect={(path) => setMoveDialogState({ ...moveDialogState, targetPath: path })} 
+                <MoveDialogFolderTree
+                  nodes={ tree }
+                  selectedPath={ moveDialogState.targetPath }
+                  onSelect={ (path) => setMoveDialogState({ ...moveDialogState, targetPath: path }) }
                 />
               </div>
             </div>
 
             <div className="p-4 border-t border-gray-800 flex justify-end gap-3 bg-gray-900 rounded-b-lg">
-              <button 
-                onClick={() => setMoveDialogState({ ...moveDialogState, isOpen: false })}
+              <button
+                onClick={ () => setMoveDialogState({ ...moveDialogState, isOpen: false }) }
                 className="px-4 py-2 rounded-md text-gray-300 hover:bg-gray-800 transition-colors text-sm"
               >
                 取消
               </button>
-              <button 
-                onClick={confirmMove}
+              <button
+                onClick={ confirmMove }
                 className="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-white transition-colors text-sm font-medium"
               >
                 確定移動
@@ -587,7 +610,7 @@ PARA 系統完美解決了這個問題。它將當下最需要行動的「專案
             </div>
           </div>
         </div>
-      )}
+      ) }
     </div>
   );
 }
