@@ -142,8 +142,26 @@ function Sidebar({ tree, onSelectFile, onCreateFile, onCreateFolder, onRenameFol
 
   return (
     <div className="w-72 bg-[#0a0a0a] border-r border-gray-800 h-screen overflow-y-auto p-4 flex flex-col">
-      <div className="text-xl font-bold tracking-tight flex items-center gap-2 mb-6 text-white px-2">
-         🧠 Second Brain
+      <div className="text-xl font-bold tracking-tight flex items-center justify-between mb-6 text-white px-2 group">
+         <div className="flex items-center gap-2">
+           🧠 Second Brain
+         </div>
+         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+           <button 
+             onClick={() => onCreateFile('')} 
+             className="p-1 hover:bg-gray-800 rounded text-gray-400 hover:text-white transition-colors" 
+             title="新增根目錄檔案"
+           >
+             <FileText className="w-4 h-4" />
+           </button>
+           <button 
+             onClick={() => onCreateFolder('')} 
+             className="p-1 hover:bg-gray-800 rounded text-gray-400 hover:text-white transition-colors" 
+             title="新增根目錄資料夾"
+           >
+             <Folder className="w-4 h-4" />
+           </button>
+         </div>
       </div>
       <nav className="flex-1">
         {renderTree(tree)}
