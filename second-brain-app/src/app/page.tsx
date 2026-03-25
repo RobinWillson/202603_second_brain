@@ -65,6 +65,8 @@ function Sidebar({ tree, onSelectFile, onCreateFile, onCreateFolder, onRenameFol
       <ul className={ level > 0 ? "pl-3 mt-1 space-y-1 border-l border-gray-800/50 ml-2" : "mt-1 space-y-1" }>
         { nodes.map(node => {
           const isExpanded = expandedFolders.has(node.path);
+          const isCoreFolder = level === 0 && ['00-inbox', '01-projects', '02-areas', '03-resources', '04-archive'].includes(node.name);
+          
           return (
             <li key={ node.path } className="text-sm">
               { node.type === 'folder' ? (
@@ -95,9 +97,9 @@ function Sidebar({ tree, onSelectFile, onCreateFile, onCreateFolder, onRenameFol
                       <div className="absolute right-0 top-full mt-1 w-32 bg-gray-800 border border-gray-700 rounded-md shadow-lg py-1 z-20 text-xs text-gray-300 font-normal">
                         <div onClick={ (e) => { e.stopPropagation(); setActiveDropdown(null); onCreateFile(node.path); } } className="px-3 py-1.5 hover:bg-gray-700 cursor-pointer text-left">新增檔案</div>
                         <div onClick={ (e) => { e.stopPropagation(); setActiveDropdown(null); onCreateFolder(node.path); } } className="px-3 py-1.5 hover:bg-gray-700 cursor-pointer text-left">新增資料夾</div>
-                        <div onClick={ (e) => { e.stopPropagation(); setActiveDropdown(null); onRenameFolder(node.path, node.name); } } className="px-3 py-1.5 hover:bg-gray-700 cursor-pointer text-left">重新命名</div>
-                        <div onClick={ (e) => { e.stopPropagation(); setActiveDropdown(null); onMoveFolder(node.path); } } className="px-3 py-1.5 hover:bg-gray-700 cursor-pointer text-left">移動到</div>
-                        <div onClick={ (e) => { e.stopPropagation(); setActiveDropdown(null); onDeleteFolder(node.path); } } className="px-3 py-1.5 hover:bg-gray-700 cursor-pointer text-left text-red-400">刪除資料夾</div>
+                        {!isCoreFolder && <div onClick={ (e) => { e.stopPropagation(); setActiveDropdown(null); onRenameFolder(node.path, node.name); } } className="px-3 py-1.5 hover:bg-gray-700 cursor-pointer text-left">重新命名</div>}
+                        {!isCoreFolder && <div onClick={ (e) => { e.stopPropagation(); setActiveDropdown(null); onMoveFolder(node.path); } } className="px-3 py-1.5 hover:bg-gray-700 cursor-pointer text-left">移動到</div>}
+                        {!isCoreFolder && <div onClick={ (e) => { e.stopPropagation(); setActiveDropdown(null); onDeleteFolder(node.path); } } className="px-3 py-1.5 hover:bg-gray-700 cursor-pointer text-left text-red-400">刪除資料夾</div>}
                       </div>
                     ) }
                   </div>
@@ -157,20 +159,6 @@ function Sidebar({ tree, onSelectFile, onCreateFile, onCreateFolder, onRenameFol
               Init
             </button>
           )}
-          <button 
-            onClick={() => onCreateFile('')} 
-            className="p-1 hover:bg-gray-800 rounded text-gray-400 hover:text-white transition-colors" 
-            title="新增根目錄檔案"
-          >
-            <FileText className="w-4 h-4" />
-          </button>
-          <button 
-            onClick={() => onCreateFolder('')} 
-            className="p-1 hover:bg-gray-800 rounded text-gray-400 hover:text-white transition-colors" 
-            title="新增根目錄資料夾"
-          >
-            <Folder className="w-4 h-4" />
-          </button>
         </div>
       </div>
       <nav className="flex-1">
