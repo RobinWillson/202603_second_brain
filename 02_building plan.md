@@ -46,10 +46,21 @@
    - 在該 Service 的設定面板中找到 **Volumes** 分頁。
    - 新增一個 Volume，將掛載路徑 (Mount Path) 設立為：`/app/data`。這可讓該資料夾獲得伺服器寫入權限，且資料會永久保留。
 5. **設定環境變數 (Environment Variables)**:
-   - 切換至 **Variables** 分頁，加入以下兩個變數來覆寫 Next.js 的預設路徑：
+   - 切換至 **Variables** 分頁，加入以下變數來覆寫預設路徑並啟動全站基礎防護驗證：
      - `NOTES_PATH` = `/app/data/notes`
      - `TRASH_PATH` = `/app/data/.trash`
-     *(若未來有使用 OpenAI 等服務，也可在此補上 `OPENAI_API_KEY`)*
+     - `AUTH_USER` = `[自訂您的登入帳號]`
+     - `AUTH_PASS` = `[自訂您的登入密碼]`
+     - `API_KEY` = `[自訂一把給 AI 機器人自動化串接用的通關密碼]`
 6. **綁定網域 (Domain)**:
-   - 服務構建與啟動完成後，在 **Networking** 分頁中點選 **Generate Domain** 生成一個 `.zeabur.app` 免費網域（或綁定您個人的自訂網域）。
-   - 點擊該網域，開始在任何裝置上享受您的雲端 Second Brain！
+   - 服務構建與啟動完成後，在 **Networking** 分頁中點選 **Generate Domain** 生效。
+   - 點擊該網域，開始享受您的雲端 Second Brain！
+
+## 步驟 6: API 與 AI 助理串接方案 (OpenClaw)
+為了避免閒雜人等偷窺您的筆記庫，本專案全站已啟用 HTTP Basic Auth 保護。若您有使用 **OpenClaw** 等自動化 AI 助理，需要程式化的讀寫權限，請選擇以下任一種方式授權：
+
+- **方案 A (URL 直接附帶帳密)**：這通常是給瀏覽器爬蟲引擎 (如 Playwright) 最簡單的放行方式。
+  - 格式: `https://[AUTH_USER]:[AUTH_PASS]@[您的網址]/`
+  - 範例: `https://robin:1234@robin-second-brain.zeabur.app/api/tree`
+- **方案 B (帶入 API 金鑰標頭)**：如果您是直接用 Fetch 或 Curl 打 API，只要帶入您在環境變數中所設定的 `API_KEY` 即可通過。
+  - Header 設定: `x-api-key: [您在第五步設定的 API_KEY]`
