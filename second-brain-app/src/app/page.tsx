@@ -165,7 +165,10 @@ export default function Home() {
   const [currentFilePath, setCurrentFilePath] = useState<string | null>(null);
   const [fileContent, setFileContent] = useState<string>('');
   const [isEditing, setIsEditing] = useState(false);
-  const [captureText, setCaptureText] = useState('');
+  const [searchText, setSearchText] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const [moveDialogState, setMoveDialogState] = useState<{isOpen: boolean, sourcePath: string, targetPath: string}>({ isOpen: false, sourcePath: '', targetPath: '' });
 
   const loadTree = async () => {
@@ -181,6 +184,34 @@ export default function Home() {
     link.href = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css';
     document.head.appendChild(link);
   }, []);
+
+  useEffect(() => {
+    if (!searchText.trim()) {
+      setSearchResults([]);
+      setShowSearchDropdown(false);
+      return;
+    }
+    const delay = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const res = await fetch('/api/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: searchText })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setSearchResults(data.results || []);
+          setShowSearchDropdown(true);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 400);
+    return () => clearTimeout(delay);
+  }, [searchText]);
 
   const paraDocs = `# PARA 數位大腦建立指南
 
@@ -364,17 +395,6 @@ PARA 系統完美解決了這個問題。它將當下最需要行動的「專案
     loadTree();
   };
 
-  const handleCapture = async () => {
-    if (!captureText.trim()) return;
-    await fetch('/api/capture', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content: captureText })
-    });
-    setCaptureText('');
-    loadTree(); // reload sidebar
-  };
-
   const handleSave = async () => {
     if (!currentFilePath) return;
     await fetch('/api/file?path=' + encodeURIComponent(currentFilePath), {
@@ -410,22 +430,49 @@ PARA 系統完美解決了這個問題。它將當下最需要行動的「專案
       />
       
       <main className="flex-1 flex flex-col h-screen overflow-hidden">
-        {/* Top Navbar / Quick Capture */}
-        <header className="h-16 border-b border-gray-800 flex items-center px-6 gap-4 bg-[#0a0a0a]">
-          <div className="flex-1 max-w-2xl flex items-center bg-gray-900 rounded-lg px-3 py-2 border border-gray-800 focus-within:border-blue-500/50 focus-within:ring-1 ring-blue-500/50 transition-all">
-            <PlusCircle className="text-gray-500 w-4 h-4 mr-2" />
-            <input 
-              type="text"
-              placeholder="Quick capture an idea or paste a URL..."
-              className="bg-transparent border-none outline-none w-full text-white text-sm"
-              value={captureText}
-              onChange={e => setCaptureText(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleCapture()}
-            />
+        {/* Top Navbar / Full-text Search */}
+        <header className="h-16 border-b border-gray-800 flex items-center px-6 gap-4 bg-[#0a0a0a] relative z-40">
+          <div className="flex-1 max-w-2xl relative">
+            <div className="flex items-center bg-gray-900 rounded-lg px-3 py-2 border border-gray-800 focus-within:border-blue-500/50 focus-within:ring-1 ring-blue-500/50 transition-all">
+              <Search className="text-gray-500 w-4 h-4 mr-2" />
+              <input 
+                type="text"
+                placeholder="搜尋筆記標題與內容... (Search notes)"
+                className="bg-transparent border-none outline-none w-full text-white text-sm focus:ring-0"
+                value={searchText}
+                onChange={e => setSearchText(e.target.value)}
+                onFocus={() => searchText.trim() && setShowSearchDropdown(true)}
+                onBlur={() => setTimeout(() => setShowSearchDropdown(false), 200)}
+              />
+            </div>
+            
+            {showSearchDropdown && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-gray-900 border border-gray-700 rounded-lg shadow-2xl max-h-96 overflow-y-auto z-50">
+                {isSearching ? (
+                  <div className="p-4 text-center text-gray-500 text-sm">搜尋中...</div>
+                ) : searchResults.length > 0 ? (
+                  <div className="py-2">
+                    {searchResults.map((result, idx) => (
+                      <div 
+                        key={idx} 
+                        onClick={() => {
+                          loadFile(result.path);
+                          setShowSearchDropdown(false);
+                        }}
+                        className="px-4 py-2 hover:bg-gray-800 cursor-pointer border-b border-gray-800/50 last:border-0"
+                      >
+                        <div className="text-sm font-medium text-blue-400 mb-1">{result.name}</div>
+                        <div className="text-xs text-gray-400 truncate">{result.preview}</div>
+                        <div className="text-[10px] text-gray-600 mt-1">{result.path}</div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-4 text-center text-gray-500 text-sm">找不到相關筆記</div>
+                )}
+              </div>
+            )}
           </div>
-          <button className="p-2 hover:bg-gray-800 rounded-lg text-gray-400 transition" title="Search">
-             <Search className="w-4 h-4"/>
-          </button>
         </header>
 
         {/* Editor / Viewer */}
